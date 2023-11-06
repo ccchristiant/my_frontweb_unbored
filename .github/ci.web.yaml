@@ -1,0 +1,31 @@
+name: CI web
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'web/**'
+
+env:
+  IMAGE_TAG_WEB: web
+
+jobs:
+  build:
+    name: Web - Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+      - name: Build the Docker image
+        working-directory: ./web
+        run: docker build -t $IMAGE_TAG_WEB --target=create-build .
+      - name: Run Prettier
+        working-directory: ./web
+        run: docker run $IMAGE_TAG_WEB sh -c 'npm run format:verify'
+      - name: Run ESLint
+        working-directory: ./web
+        run: docker run $IMAGE_TAG_WEB sh -c 'npm run lint:verify'
+      - name: Run tests
+        working-directory: ./web
+        run: docker run $IMAGE_TAG_WEB sh -c 'npm run test:nowatch'
